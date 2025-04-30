@@ -24,12 +24,11 @@ app.use(express.static("public"));
 //   res.sendStatus(200);
 // });
 
-const moviePath = "http://www.omdbapi.com/?apikey=2d98dd4e&t=";
+// const moviePath = "http://www.omdbapi.com/?apikey=2d98dd4e&t=";
 
 app.post("/review", async (req, res) => {
   const { name, rating, description } = req.body;
 
-  // grab IMDb id and image link
   const movieInfo = await axios.get(
     "http://www.omdbapi.com/?apikey=2d98dd4e&t=" + name
   );
@@ -76,6 +75,18 @@ const commentInsert = async (description, reviewId) => {
   }
 };
 
+const commentGatherer = async (reviewId) => {
+  try {
+    const result = await db.query(
+      "SELECT * FROM comment WHERE review_id = $1",
+      [reviewId]
+    );
+    return result.rows;
+  } catch (err) {
+    throw err;
+  }
+};
+
 app.post("/ratingEdit", async (req, res) => {
   const { rating, id } = req.body;
 
@@ -100,6 +111,26 @@ app.post("/descriptionEdit", async (req, res) => {
       id,
     ]);
     // res.redirect("/");
+    res.sendStatus(200);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+app.get("/review/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await db.query("SELECT * FROM review WHERE id = $1", [id]);
+    const reviewResult = result.rows[0];
+    const comments = await commentGatherer(id);
+
+    const fetchedReview = {
+      ...reviewResult,
+      comments,
+    };
+    console.log(fetchedReview);
+
     res.sendStatus(200);
   } catch (err) {
     console.log(err);
