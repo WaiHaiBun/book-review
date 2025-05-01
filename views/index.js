@@ -33,8 +33,14 @@ app.post("/review", async (req, res) => {
     "http://www.omdbapi.com/?apikey=2d98dd4e&t=" + name
   );
 
-  console.log(movieInfo.data);
   const { imdbID, Title, Poster } = movieInfo.data;
+
+  // if imdbID does not exist then return Movie does not exist, else continue
+
+  if (!imdbID) {
+    res.sendStatus(404);
+    return;
+  }
 
   try {
     const createdReview = await db.query(
@@ -137,12 +143,38 @@ app.get("/review/:id", async (req, res) => {
   }
 });
 
-app.delete("/reviewDelete", async (req, res) => {
+app.get("/preview", async (req, res) => {
+  const { frontpage } = req.query;
+
+  try {
+    const result = await db.query("SELECT name, image_link FROM review");
+    // console.log(result.rows);
+    const reviewList = result.rows;
+    // const listSize = reviewList.length;
+    if (!frontpage) {
+      console.log(reviewList);
+      res.sendStatus(201);
+      return;
+    }
+    const shuffleList = reviewList.sort(() => Math.random() - 0.5);
+    // console.log(shuffleList);
+    const firstThree = shuffleList.slice(0, 3);
+    console.log(firstThree);
+    res.sendStatus(200);
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(400);
+  }
+});
+
+app.get("");
+
+app.delete("/review", async (req, res) => {
   const { id } = req.body;
   try {
+    await db.query("DELETE FROM comment WHERE review_id = $1", [id]);
     await db.query("DELETE FROM review WHERE id = $1", [id]);
     // res.redirect("/");
-    // do I need to go find the FK linked comment and delete that first then delete review?
     res.sendStatus(200);
   } catch (err) {
     console.log(err);
@@ -151,7 +183,6 @@ app.delete("/reviewDelete", async (req, res) => {
 
 app.listen(port, async () => {
   console.log(`Server running on port ${port}`);
-  // await getCurrentId();
 });
 
 // {
