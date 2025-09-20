@@ -36,7 +36,6 @@ app.post("/review", async (req, res) => {
   const { imdbID, Title, Poster } = movieInfo.data;
 
   // if imdbID does not exist then return Movie does not exist, else continue
-
   if (!imdbID) {
     res.sendStatus(404);
     return;
@@ -50,8 +49,7 @@ app.post("/review", async (req, res) => {
 
     const reviewId = createdReview.rows[0].id;
     await commentInsert(description, reviewId);
-
-    res.sendStatus(201);
+    res.status(201).json({ data: { id: reviewId } });
   } catch (err) {
     console.log(err);
     res.sendStatus(400);
@@ -63,6 +61,7 @@ app.post("/comment", async (req, res) => {
   // console.log(req.body);
   try {
     await commentInsert(description, reviewId);
+    // console.log("done");
     res.sendStatus(200);
   } catch (err) {
     console.log(err);
@@ -135,39 +134,38 @@ app.get("/review/:id", async (req, res) => {
       ...reviewResult,
       comments,
     };
-    console.log(fetchedReview);
+    // console.log(fetchedReview);
 
-    res.sendStatus(200);
+    res.status(200).json({ data: fetchedReview });
   } catch (err) {
     console.log(err);
   }
 });
 
 app.get("/preview", async (req, res) => {
-  const { frontpage } = req.query;
-
   try {
     const result = await db.query("SELECT name, image_link FROM review");
-    // console.log(result.rows);
     const reviewList = result.rows;
-    // const listSize = reviewList.length;
-    if (!frontpage) {
-      console.log(reviewList);
-      res.sendStatus(201);
-      return;
-    }
     const shuffleList = reviewList.sort(() => Math.random() - 0.5);
-    // console.log(shuffleList);
     const firstThree = shuffleList.slice(0, 3);
     console.log(firstThree);
-    res.sendStatus(200);
+    res.status(200).json({ data: firstThree });
   } catch (err) {
     console.log(err);
     res.sendStatus(400);
   }
 });
 
-app.get("");
+app.get("/fullList", async (req, res) => {
+  try {
+    const result = await db.query("SELECT name, image_link, id FROM review");
+    const fullList = result.rows;
+    res.status(200).json({ data: fullList });
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(400);
+  }
+});
 
 app.delete("/review", async (req, res) => {
   const { id } = req.body;
