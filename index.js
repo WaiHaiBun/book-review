@@ -26,7 +26,7 @@ app.use(express.static("public"));
 
 // const moviePath = "http://www.omdbapi.com/?apikey=2d98dd4e&t=";
 
-app.post("/review", async (req, res) => {
+app.post("/api/review", async (req, res) => {
   const { name, rating, description } = req.body;
 
   const movieInfo = await axios.get(
@@ -56,7 +56,7 @@ app.post("/review", async (req, res) => {
   }
 });
 
-app.post("/comment", async (req, res) => {
+app.post("/api/comment", async (req, res) => {
   const { description, reviewId } = req.body;
   // console.log(req.body);
   try {
@@ -92,7 +92,7 @@ const commentGatherer = async (reviewId) => {
   }
 };
 
-app.post("/ratingEdit", async (req, res) => {
+app.post("/api/ratingEdit", async (req, res) => {
   const { rating, id } = req.body;
 
   try {
@@ -107,7 +107,7 @@ app.post("/ratingEdit", async (req, res) => {
   }
 });
 
-app.post("/descriptionEdit", async (req, res) => {
+app.post("/api/descriptionEdit", async (req, res) => {
   const { description, id } = req.body;
 
   try {
@@ -122,7 +122,7 @@ app.post("/descriptionEdit", async (req, res) => {
   }
 });
 
-app.get("/review/:id", async (req, res) => {
+app.get("/api/review/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -142,7 +142,7 @@ app.get("/review/:id", async (req, res) => {
   }
 });
 
-app.get("/preview", async (req, res) => {
+app.get("/api/preview", async (req, res) => {
   try {
     const result = await db.query("SELECT name, image_link FROM review");
     const reviewList = result.rows;
@@ -156,7 +156,7 @@ app.get("/preview", async (req, res) => {
   }
 });
 
-app.get("/fullList", async (req, res) => {
+app.get("/api/fullList", async (req, res) => {
   try {
     const result = await db.query("SELECT name, image_link, id FROM review");
     const fullList = result.rows;
@@ -167,7 +167,7 @@ app.get("/fullList", async (req, res) => {
   }
 });
 
-app.delete("/review", async (req, res) => {
+app.delete("/api/review", async (req, res) => {
   const { id } = req.body;
   try {
     await db.query("DELETE FROM comment WHERE review_id = $1", [id]);
