@@ -144,11 +144,10 @@ app.get("/api/review/:id", async (req, res) => {
 
 app.get("/api/preview", async (req, res) => {
   try {
-    const result = await db.query("SELECT name, image_link FROM review");
+    const result = await db.query("SELECT name, image_link, id FROM review");
     const reviewList = result.rows;
     const shuffleList = reviewList.sort(() => Math.random() - 0.5);
     const firstThree = shuffleList.slice(0, 3);
-    console.log(firstThree);
     res.status(200).json({ data: firstThree });
   } catch (err) {
     console.log(err);
